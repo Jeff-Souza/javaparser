@@ -95,11 +95,13 @@ TOKEN : /* OPERATORS */
 TOKEN :
 {
   < INTTYPE : "int" >
-| < NEWLINE : "newline" >
+| < BOOLEANTYPE : "boolean" >
 | < STRINGTYPE : "string" >
 | < PRINT : "print" >
+| < NEWLINE : "newline" >
 | < CONSTANT : (< DIGIT >)+ >
 | < #DIGIT : [ "0"-"9" ] >
+| < #BOOLEAN : [ "true", "false" ] >
 | < VAR : (< LETTER >)+ >
 | < #LETTER :
     [ "a"-"z" ]
@@ -145,7 +147,7 @@ void statement() :
 |
   (
     < NEWLINE > ";"
-    System.out.print("p");
+    System.out.print("[\n]P");
   )
 |
   (
