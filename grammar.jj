@@ -34,6 +34,15 @@ public class PS7Compiler
       throw new TypeException("Expected int, received " + type);
     }
   }
+
+  // If the t is not "int", throws a TypeException
+  public void checkBool (String type)
+  {
+    if (!(type.equals("boolean")))
+    {
+      throw new TypeException("Expected boolean, received " + type);
+    }
+  }
   
   public static void main(String args [])
   {
@@ -90,6 +99,9 @@ TOKEN : /* OPERATORS */
 | < MINUS : "-" >
 | < MULTIPLY : "*" >
 | < DIVIDE : "/" >
+| < SMALLER : "<" >
+| < BIGGER : ">" >
+| < EEQUAL : "==" >  
 }
 
 TOKEN :
@@ -97,11 +109,11 @@ TOKEN :
   < INTTYPE : "int" >
 | < BOOLEANTYPE : "boolean" >
 | < STRINGTYPE : "string" >
+| < BOOLEAN : "true" | "false" >
 | < PRINT : "print" >
 | < NEWLINE : "newline" >
 | < CONSTANT : (< DIGIT >)+ >
 | < #DIGIT : [ "0"-"9" ] >
-| < #BOOLEAN : [ "true", "false" ] >
 | < VAR : (< LETTER >)+ >
 | < #LETTER :
     [ "a"-"z" ]
@@ -128,7 +140,7 @@ void statement() :
 }
 {
   (
-    t = < VAR > < EQUALS > etype = exp() ";"
+    t = < VAR > < EQUALS > etype = bool() ";"
     {
       if (variables.get(t.image) == null)
       {
@@ -147,12 +159,14 @@ void statement() :
 |
   (
     < NEWLINE > ";"
-    System.out.print("[\n]P");
+    {
+    	System.out.print("[\n]P");
+    }
   )
 |
   (
-    (type = < INTTYPE > | type = < STRINGTYPE >)
-      t = < VAR > < EQUALS > etype = exp() ";"
+    (type = < INTTYPE > | type = < STRINGTYPE > | type = < BOOLEANTYPE >)
+      t = < VAR > < EQUALS > etype = bool() ";"
     {
       if (variables.get(t.image) == null)
       {
@@ -179,11 +193,65 @@ void statement() :
   )
 |   
   (
-    < PRINT > exp() ";"
+    < PRINT > bool() ";"
     {
       System.out.print("n ");
     }
   )
+}
+
+String bool() :
+{
+  Token t;
+  String type9, type10;
+}
+{
+  type9 = inequal()
+  (
+    (
+      t = < EEQUAL >
+    )
+    type10 = inequal()
+    {
+      System.out.print(t.image + " ");
+      checkBool(type9);
+	  checkBool(type10);
+	  if(t.image.equals("=="))
+	  {		return "boolean";
+	  }
+    }
+  )*
+  {
+    return type9;
+  }
+}
+
+String inequal() :
+{
+  Token t;
+  String type7, type8;
+}
+{
+  type7 = exp()
+  (
+    (
+      t = < SMALLER >
+    | t = < BIGGER >
+    | t = < EEQUAL >
+    )
+    type8 = exp()
+    {
+      System.out.print(t.image + " ");
+      checkInt(type7);
+	  checkInt(type8);
+	  if(t.image.equals("<") || t.image.equals(">") || t.image.equals("=="))
+	  {	    return "boolean";
+	  }
+    }
+  )*
+  {
+    return type7;
+  }
 }
 
 String exp() :
@@ -239,11 +307,7 @@ String factor() :
   String type2;
 }
 {
-  "-"
-  {
-    //System.out.print("_");
-  }
-  type2 = element()
+  "-" type2 = element()
   {
     checkInt(type2);
     System.out.print("_1 * ");
@@ -251,7 +315,7 @@ String factor() :
   }
 | type2 = element()
   {
-	return type2;
+    return type2;
   }
 }
 
@@ -265,6 +329,12 @@ String element() :
   {
     System.out.print(t.image + " ");
     return "int";
+  }
+|
+  t = < BOOLEAN >
+  {
+  	System.out.print("[" + t.image + "]");
+    return "boolean";
   }
 |
   t = < STRING >
@@ -288,7 +358,7 @@ String element() :
       return types.get(t.image);
     }
   }
-| "(" type1 = exp() ")"
+| "(" type1 = bool() ")"
   {
 	return type1;
   }
